@@ -109,7 +109,7 @@ static BOOL initialFactoryWasCreated = NO;
         }
         if (initialFactory) {
             TyphoonGlobalConfigCollector *collector = [[TyphoonGlobalConfigCollector alloc] initWithAppDelegate:delegate];
-            NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+            NSBundle *bundle = [NSBundle mainBundle];
             NSArray *globalConfigFileNames = [collector obtainGlobalConfigFilenamesFromBundle:bundle];
             for (NSString *configName in globalConfigFileNames) {
                 id<TyphoonDefinitionPostProcessor> configProcessor = [TyphoonConfigPostProcessor forResourceNamed:configName inBundle:bundle];
