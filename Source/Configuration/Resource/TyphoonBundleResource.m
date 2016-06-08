@@ -21,7 +21,7 @@
 
 + (id <TyphoonResource>)withName:(NSString *)name
 {
-    return [self withName:name inBundle:[NSBundle bundleForClass:[self class]]];
+    return [self withName:name inBundle:[NSBundle mainBundle]];
 }
 
 + (id <TyphoonResource>)withName:(NSString *)name inBundle:(NSBundle *)bundle
