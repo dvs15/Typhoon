@@ -12,11 +12,13 @@
 #import "TyphoonViewHelpers.h"
 #import "TyphoonAssembly.h"
 #import "TyphoonBlockComponentFactory.h"
+#import "NSLayoutConstraint+TyphoonOutletTransfer.h"
 
 @interface TyphoonViewHelpersFactory : TyphoonAssembly
 
 - (NSString *)notView;
 - (UIView *)view;
+BOOL equalProperties(NSLayoutConstraint *c1, NSLayoutConstraint *c2);
 
 @end
 
@@ -37,7 +39,8 @@ BOOL equalProperties(NSLayoutConstraint *c1, NSLayoutConstraint *c2){
     c1.relation == c2.relation &&
     c1.firstAttribute == c2.firstAttribute &&
     c1.secondAttribute == c2.secondAttribute &&
-    c1.constant == c2.constant;
+    c1.constant == c2.constant &&
+    [c1.typhoonTransferIdentifier isEqualToString:c2.typhoonTransferIdentifier];
 }
 
 @interface TyphoonViewHelpersTests : XCTestCase
@@ -155,25 +158,29 @@ BOOL equalProperties(NSLayoutConstraint *c1, NSLayoutConstraint *c2){
     
     for (NSLayoutConstraint *dstConstraint in dst.constraints) {
         BOOL didFindEqualPointer = NO;
+        BOOL notRetainSourceConstraint = NO;
         
         for (NSLayoutConstraint *srcConstraint in src.constraints) {
             if (equalProperties(dstConstraint, srcConstraint)){
-                
                 BOOL replaceFirstItem = [srcConstraint firstItem] == src;
                 BOOL replaceSecondItem = [srcConstraint secondItem] == src;
                 id firstItem = replaceFirstItem ? dst : srcConstraint.firstItem;
                 id secondItem = replaceSecondItem ? dst : srcConstraint.secondItem;
                 
                 if ([dstConstraint.firstItem isEqual:firstItem] &&
-                    [dstConstraint.secondItem isEqual:secondItem] &&
-                    dstConstraint == srcConstraint) {
+                    [dstConstraint.secondItem isEqual:secondItem]) {
                     didFindEqualPointer = YES;
-                    break;
                 }
+                
+                if (dstConstraint.typhoonTransferConstraint != srcConstraint) {
+                    notRetainSourceConstraint = YES;
+                }
+                
             }
         }
         
         XCTAssertTrue(didFindEqualPointer, @"%@", dstConstraint.description);
+        XCTAssertFalse(notRetainSourceConstraint, @"%@", dstConstraint.description);
     }
     
     XCTAssertEqual(dst.constraints.count, src.constraints.count);

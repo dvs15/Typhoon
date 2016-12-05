@@ -110,8 +110,6 @@
 
 - (id)blockKnightWithFavoriteDamsels:(NSArray *)favoriteDamsels questURL:(NSURL *)questURL;
 
-- (id)blockKnightWithPrimitiveDamsels:(NSUInteger)damsels;
-
 - (id)blockKnightWithQuestsByType;
 
 - (id)blockKnightWithoutInitializer;
@@ -121,5 +119,9 @@
 - (id)knightWithBlockQuestWithURL:(NSURL *)questURL;
 
 - (id)notSoBlockKnight;
+
+- (id)rectModel;
+
+- (NSNumber *)doublePrimitive;
 
 @end

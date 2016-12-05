@@ -12,6 +12,7 @@
 #import <XCTest/XCTest.h>
 #import "MiddleAgesAssembly.h"
 #import "Knight.h"
+#import "RectModel.h"
 
 @interface TyphoonInjectionDefinitionTests : XCTestCase
 
@@ -23,7 +24,7 @@
 }
 
 - (void)setUp {
-    _assembly = [[MiddleAgesAssembly assembly] activate];
+    _assembly = [[MiddleAgesAssembly assembly] activated];
     [super setUp];
 }
 
@@ -73,6 +74,23 @@
 
     NSNumber*(^block)(void) = ^{ return @1; };
     XCTAssertEqualObjects(((id(^)(void))[_assembly simpleRuntimeArgument:block])(), @1);
+}
+
+- (void)test_primitive_definition_component
+{
+    RectModel *rectModel = [_assembly rectModel];
+    
+    XCTAssertFalse(CGRectEqualToRect(rectModel.rectFrame, CGRectZero));
+    
+    XCTAssertTrue(rectModel.rectFrame.size.height == 100);
+}
+
+- (void)test_double_definition
+{
+    NSNumber *primitive = [_assembly doublePrimitive];
+    
+    XCTAssertEqualObjects(primitive, @(123.32));
+    
 }
 
 @end

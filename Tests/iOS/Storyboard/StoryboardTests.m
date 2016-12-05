@@ -15,25 +15,36 @@
 #import "TyphoonStoryboard.h"
 #import "StoryboardViewControllerAssembly.h"
 #import "StoryboardFirstViewController.h"
+#import "StoryboardTabBarViewController.h"
+#import "StoryboardTabBarFirstViewController.h"
+#import "StoryboardTabBarSecondViewController.h"
+#import "StoryboardWithReferenceAssembly.h"
 
 @interface StoryboardTests : XCTestCase
+
+@property (strong, nonatomic) id factory;
 
 @end
 
 @implementation StoryboardTests
 {
     UIStoryboard *storyboard;
+    UIStoryboard *storyboardWithReference;
 }
 
 - (void)setUp
 {
     [super setUp];
 
-    NSBundle *bundle = [NSBundle bundleForClass:[TyphoonBundleResource class]];
+    self.factory = [TyphoonBlockComponentFactory factoryWithAssembly:[StoryboardViewControllerAssembly assembly]];
 
-    TyphoonComponentFactory *factory = [TyphoonBlockComponentFactory factoryWithAssembly:[StoryboardViewControllerAssembly assembly]];
+    storyboard = [self.factory storyboard];
+}
 
-    storyboard = [TyphoonStoryboard storyboardWithName:@"Storyboard" factory:factory bundle:bundle];
+- (void)tearDown
+{
+    self.factory = nil;
+    [super tearDown];
 }
 
 - (void)test_initial
@@ -79,5 +90,69 @@
     UINavigationController *controller = [storyboard instantiateViewControllerWithIdentifier:@"unique"];
     XCTAssertEqualObjects(controller.title, @"Unique");
 }
-@end
 
+- (void)test_singleton_controller
+{
+    UIViewController *factoryController = [self.factory singletonViewController];
+    XCTAssertEqualObjects(factoryController.title, @"singleton");
+    
+    UIViewController *storyboardController = [storyboard instantiateViewControllerWithIdentifier:@"SingletonViewController"];
+    XCTAssertEqualObjects(storyboardController.title, @"singleton");
+    
+    XCTAssertEqualObjects(factoryController, storyboardController);
+}
+
+- (void)test_lazy_singleton_controller
+{
+    UIViewController *storyboardController = [storyboard instantiateViewControllerWithIdentifier:@"LazySingletonViewController"];
+    XCTAssertEqualObjects(storyboardController.title, @"lazysingleton");
+    
+    UIViewController *factoryController = [self.factory lazySingletonViewController];
+    XCTAssertEqualObjects(factoryController.title, @"lazysingleton");
+    
+    XCTAssertEqualObjects(factoryController, storyboardController);
+}
+
+- (void)test_weak_singleton_controller
+{
+    UIViewController *storyboardController;
+    UIViewController *factoryController;
+    
+    @autoreleasepool {
+        storyboardController = [storyboard instantiateViewControllerWithIdentifier:@"WeakSingletonViewController"];
+        XCTAssertEqualObjects(storyboardController.title, @"weaksingleton");
+        
+        storyboardController.title = @"step1";
+        
+        factoryController = [self.factory weakSingletonViewController];
+        XCTAssertEqualObjects(factoryController.title, @"step1");
+    }
+    
+    storyboardController = nil;
+    factoryController = nil;
+    
+    UIViewController *otherController = [self.factory weakSingletonViewController];
+    XCTAssertEqualObjects(otherController.title, @"weaksingleton");
+}
+
+- (void)test_prototype_controller
+{
+    UIViewController *firstInstance = [storyboard instantiateViewControllerWithIdentifier:@"PrototypeViewController"];
+    UIViewController *secondInstance = [storyboard instantiateViewControllerWithIdentifier:@"PrototypeViewController"];
+    XCTAssertNotEqualObjects(firstInstance, secondInstance);
+}
+
+- (void)test_controller_created_by_storyboard_name
+{
+    UIViewController *oneMoreViewController = [storyboard instantiateViewControllerWithIdentifier:@"OneMoreViewController"];
+    XCTAssertEqualObjects(oneMoreViewController.title, @"OneMoreViewController");
+}
+
+- (void)test_controller_with_runtime_attributes {
+    NSString *controllerId = @"OneMoreViewController";
+    NSString *testTitle = @"Test Title";
+    UIViewController *result = [self.factory oneMoreViewControllerWithId:controllerId title:testTitle];
+    XCTAssertEqualObjects(result.title, testTitle);
+}
+
+@end

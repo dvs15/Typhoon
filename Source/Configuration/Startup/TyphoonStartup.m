@@ -96,6 +96,9 @@ static BOOL initialFactoryWasCreated = NO;
     void(*originalImp)(id, SEL, id) = (void (*)(id, SEL, id))method_getImplementation(method);
 
     IMP adjustedImp = imp_implementationWithBlock(^(id instance, id delegate) {
+        if (!delegate) {
+            return;
+        }
         [self requireInitialFactory];
         id factoryFromDelegate = [self factoryFromAppDelegate:delegate];
         if (factoryFromDelegate && initialFactory) {
@@ -109,7 +112,7 @@ static BOOL initialFactoryWasCreated = NO;
         }
         if (initialFactory) {
             TyphoonGlobalConfigCollector *collector = [[TyphoonGlobalConfigCollector alloc] initWithAppDelegate:delegate];
-            NSBundle *bundle = [NSBundle mainBundle];
+            NSBundle *bundle = [NSBundle bundleForClass:[delegate class]];
             NSArray *globalConfigFileNames = [collector obtainGlobalConfigFilenamesFromBundle:bundle];
             for (NSString *configName in globalConfigFileNames) {
                 id<TyphoonDefinitionPostProcessor> configProcessor = [TyphoonConfigPostProcessor forResourceNamed:configName inBundle:bundle];

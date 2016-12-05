@@ -347,6 +347,14 @@
 }
 
 //-------------------------------------------------------------------------------------------
+#pragma mark - Circular dependencies with "afterInjections" hook
+
+- (void)test_after_injections_called_after_parents_injections
+{
+    XCTAssertNoThrow([_circularDependenciesFactory componentForKey:@"propertyInjectionA"]);
+}
+
+//-------------------------------------------------------------------------------------------
 #pragma mark - Currently Resolving Overwriting Problem
 
 - (void)
@@ -440,15 +448,6 @@ test_currently_resolving_references_dictionary_is_not_overwritten_when_initializ
     
     CampaignQuest *quest = (CampaignQuest *)knight.quest;
     XCTAssertEqualObjects(quest.imageUrl, [NSURL URLWithString:@"https://foobar.org"]);
-}
-
-- (void)test_block_definition_can_have_primitive_arguments
-{
-    MiddleAgesAssembly *assembly = (MiddleAgesAssembly *)_componentFactory;
-    
-    Knight *knight = [assembly blockKnightWithPrimitiveDamsels:42];
-    XCTAssertNotNil(knight);
-    XCTAssertEqual(knight.damselsRescued, (NSUInteger)42);
 }
 
 - (void)test_block_definition_with_injection_by_type
